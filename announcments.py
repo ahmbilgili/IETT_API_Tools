@@ -7,7 +7,9 @@ import utils.functions
 
 wsdl = "https://api.ibb.gov.tr/iett/UlasimDinamikVeri/Duyurular.asmx?wsdl"
 
-def take_line_code(line_code_input):
+translate_dict = {"HATKODU": "Line Code", "HAT": "Line", "TIP": "Type", "GUNCELLEME_SAATI": "Update Time", "MESAJ": "Message"}
+
+def format_line_code(line_code_input):
     line_code = utils.functions.special_char_upper_func(line_code_input)
     return line_code
 
@@ -16,7 +18,7 @@ def soap_call():
     announcments_response = client.service.GetDuyurular_json()
 
     if len(announcments_response) == 0:
-        print("Duyurular bulunamadı / Announcments not found")
+        print("No announcments found!")
         exit()
 
     return announcments_response
@@ -27,30 +29,32 @@ def soap_response_to_list(soap_response):
 def get_specific_bus_lines_announcments(line_code, announcment_list):
     output_buffer = []
     for element in announcment_list:
-        if line_code in element["HATKODU"] :
-            output_buffer.append(element)
+        if line_code in element["HATKODU"]:
+            output_buffer.append(utils.functions.parse_and_translate_values_dict(translate_dict, element))
     return output_buffer
 
 def print_elements(outp_buffer):
     print()
     for list_element in outp_buffer: 
-        print("Hat Kodu:", list_element["HATKODU"])
-        print("Hat:", list_element["HAT"])
-        print("Tip:", list_element["TIP"])
-        print("Güncelleme Saati:", list_element["GUNCELLEME_SAATI"])
-        print("Mesaj:", list_element["MESAJ"])
+        for key, value in list_element.items():
+            print(f"{key}: {value}")
         print()
+
+def convert_list_tostr_announcments(announcment_list):
+    out_string = ""
+    for element in announcment_list:
+        for key, value in element.items():
+            out_string += f"{key}: {value}\n"
+    return out_string + "\n"
+
 
 def main():
     try:
-        hat_kodu = take_line_code(input("Hat kodu giriniz (tüm duyurular için boş bırakın) / Enter bus line code (leave empty for all announcments): "))
-
-        duyurular_response = soap_call()
-
-        duyurular_response_list = soap_response_to_list(duyurular_response)
-
-        specific_announcments = get_specific_bus_lines_announcments(hat_kodu, duyurular_response_list)
-
+        line_code = input("Enter line code (leave empty for all lines): ")
+        format_line_code(line_code)
+        announcments_response = soap_call()
+        announcments_response_list = soap_response_to_list(announcments_response)
+        specific_announcments = get_specific_bus_lines_announcments(line_code, announcments_response_list)
         print_elements(specific_announcments)
 
     except IndexError as index_exc:

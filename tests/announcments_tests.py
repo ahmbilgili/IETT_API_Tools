@@ -2,7 +2,10 @@ import pytest
 import os
 import sys
 import json
-sys.path.append("/home/lolundcmd/Desktop/IETT_API_Tools")
+
+# quite elegant solution
+root_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) 
+sys.path.append(root_path)
 
 import announcments
 
@@ -40,7 +43,7 @@ def test_get_specific_bus_lines_announcments_busline_exists_single_element_respo
     input = ["1", [{"HATKODU": "1", "HAT": "NA", "MESAJ": "TestMessage1"}, {"HATKODU": "2", "HAT": "NA", "MESAJ": "TestMessage3"}]]
     result = announcments.get_specific_bus_lines_announcments(input[0], input[1])
 
-    expected_result = [{"HATKODU": "1", "HAT": "NA", "MESAJ": "TestMessage1"}]
+    expected_result = [{"Line Code": "1", "Line": "NA", "Message": "TestMessage1"}]
     
     assert result == expected_result
 
@@ -48,7 +51,7 @@ def test_get_specific_bus_lines_announcments_busline_exists_multiple_element_res
     input = ["1", [{"HATKODU": "1", "HAT": "NA", "MESAJ": "TestMessage1"}, {"HATKODU": "1", "HAT": "NA", "MESAJ": "TestMessage2"}, {"HATKODU": "2", "HAT": "NA", "MESAJ": "TestMessage3"}]]
     result = announcments.get_specific_bus_lines_announcments(input[0], input[1])
 
-    expected_result = [{"HATKODU": "1", "HAT": "NA", "MESAJ": "TestMessage1"}, {"HATKODU": "1", "HAT": "NA", "MESAJ": "TestMessage2"}]
+    expected_result = [{"Line Code": "1", "Line": "NA", "Message": "TestMessage1"}, {"Line Code": "1", "Line": "NA", "Message": "TestMessage2"}]
     
     assert result == expected_result
 
@@ -63,46 +66,46 @@ def test_get_specific_bus_lines_announcments_busline_exists_invalid_busline():
 
 def test_print_elements_single_element_input(capsys):
     input = [
-        {"HATKODU": "93M", "HAT": "ZEYTINBURNU - MECIDIYEKÖY", "TIP": "Günlük", "GUNCELLEME_SAATI": "Kayit Saati: 12:01", "MESAJ": "mock"}
+        {"Line Code": "93M", "Line": "ZEYTINBURNU - MECIDIYEKÖY", "Type": "Günlük", "Update Time": "Kayit Saati: 12:01", "Message": "mock"}
     ]
     announcments.print_elements(input)
     captured = capsys.readouterr()
     assert captured.out == str(
         "\n" +
-        "Hat Kodu: 93M\n" +
-        "Hat: ZEYTINBURNU - MECIDIYEKÖY\n" +
-        "Tip: Günlük\n" + 
-        "Güncelleme Saati: Kayit Saati: 12:01\n" +
-        "Mesaj: mock\n\n"
+        "Line Code: 93M\n" +
+        "Line: ZEYTINBURNU - MECIDIYEKÖY\n" +
+        "Type: Günlük\n" + 
+        "Update Time: Kayit Saati: 12:01\n" +
+        "Message: mock\n\n"
     )
 
 def test_print_elements_multiple_element_input(capsys):
     input = [
-        {"HATKODU": "93M", "HAT": "ZEYTINBURNU - MECIDIYEKÖY", "TIP": "Günlük", "GUNCELLEME_SAATI": "Kayit Saati: 12:01", "MESAJ": "mock"},
-        {'HATKODU': '93T', 'HAT': 'ZEYTINBURNU - TAKSIM', 'TIP': 'Günlük', 'GUNCELLEME_SAATI': 'Kayit Saati: 12:01', 'MESAJ': ''},
-        {'HATKODU': '97GE', 'HAT': '15 TEMMUZ MAHALLESI - EMINÖNÜ', 'TIP': 'Sefer', 'GUNCELLEME_SAATI': 'Kayit Saati: 04:27', 'MESAJ': 'nock'},
+        {"Line Code": "93M", "Line": "ZEYTINBURNU - MECIDIYEKÖY", "Type": "Günlük", "Update Time": "Kayit Saati: 12:01", "Message": "mock"},
+        {'Line Code': '93T', 'Line': 'ZEYTINBURNU - TAKSIM', 'Type': 'Günlük', 'Update Time': 'Kayit Saati: 12:01', 'Message': ''},
+        {'Line Code': '97GE', 'Line': '15 TEMMUZ MAHALLESI - EMINÖNÜ', 'Type': 'Sefer', 'Update Time': 'Kayit Saati: 04:27', 'Message': 'nock'},
     ]
     announcments.print_elements(input)
     captured = capsys.readouterr()
     assert captured.out == str(
         "\n" +
-        "Hat Kodu: 93M\n" +
-        "Hat: ZEYTINBURNU - MECIDIYEKÖY\n" +
-        "Tip: Günlük\n" + 
-        "Güncelleme Saati: Kayit Saati: 12:01\n" +
-        "Mesaj: mock\n\n" +
+        "Line Code: 93M\n" +
+        "Line: ZEYTINBURNU - MECIDIYEKÖY\n" +
+        "Type: Günlük\n" + 
+        "Update Time: Kayit Saati: 12:01\n" +
+        "Message: mock\n\n" +
 
-        "Hat Kodu: 93T\n" +
-        "Hat: ZEYTINBURNU - TAKSIM\n" +
-        "Tip: Günlük\n" + 
-        "Güncelleme Saati: Kayit Saati: 12:01\n" +
-        "Mesaj: \n\n" +
+        "Line Code: 93T\n" +
+        "Line: ZEYTINBURNU - TAKSIM\n" +
+        "Type: Günlük\n" + 
+        "Update Time: Kayit Saati: 12:01\n" +
+        "Message: \n\n" +
 
-        "Hat Kodu: 97GE\n" +
-        "Hat: 15 TEMMUZ MAHALLESI - EMINÖNÜ\n" +
-        "Tip: Sefer\n" + 
-        "Güncelleme Saati: Kayit Saati: 04:27\n" +
-        "Mesaj: nock\n\n"
+        "Line Code: 97GE\n" +
+        "Line: 15 TEMMUZ MAHALLESI - EMINÖNÜ\n" +
+        "Type: Sefer\n" + 
+        "Update Time: Kayit Saati: 04:27\n" +
+        "Message: nock\n\n"
     )
 
 def test_print_elements_empty_input(capsys):

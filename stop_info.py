@@ -8,23 +8,27 @@ import lxml
 
 import utils.functions
 
+translate_dict = {"HATKODU": "Line code", "YON": "Direction", "YON_ADI": "Direction name", "SIRANO": "Queue number", 
+                  "DURAKKODU": "Stop code", "DURAKADI": "Stop name", "XKOORDINATI": "X Coordinate (latitude)", "YKOORDINATI": "Y coordinate (longitude)", 
+                  "DURAKTIPI": "Stop type", "ISLETMEBOLGE": "Region", "ISLETMEALTBOLGE": "Subregion", "ILCEADI": "Neighborhood name"}
+
 def take_inputs(): # For handling I/O
-    line_code = utils.functions.special_char_upper_func(input("Hat kodu giriniz / Enter bus code: "))
+    line_code = utils.functions.special_char_upper_func(input("Enter bus code: "))
     
     if line_code == "":
-        raise ValueError("Hat kodu boş bırakılamaz / Bus code cannot be left empty")
+        raise ValueError("Bus code cannot be left empty")
     
-    direction_choice = utils.functions.special_char_upper_func(input("Gitmek istediğiniz yönü giriniz (tüm yönler için boş bırakın) / Enter direction you would like to go (for all directions leave empty): "))
+    direction_choice = utils.functions.special_char_upper_func(input("Enter direction you would like to go (leave empty for all directions): "))
 
-    print("1 - Durak listele\n2 - Durak ara")
-    choice = input("Tercih giriniz / Enter choice: ")
+    print("1 - List stops\n2 - Search a stop")
+    choice = input("Enter choice: ")
 
     if choice not in ["1", "2"]:
-        raise ValueError("Hatalı tercih / Invalid choice")
+        raise ValueError("Invalid choice")
     
     stop_name = ""
     if choice == "2":
-        stop_name = utils.functions.special_char_upper_func(input("Durak adı giriniz / Enter stop name: "))
+        stop_name = utils.functions.special_char_upper_func(input("Enter stop name: "))
 
     IO_Dict = {"Line Code": line_code, "Direction": direction_choice, "Choice": choice, "Stop": stop_name}
     return IO_Dict
@@ -34,7 +38,7 @@ def soap_call(hat_kodu, wsdl):
     root = client.service.DurakDetay_GYY_wYonAdi(hat_kodu)
 
     if len(root) == 0:
-        print("Hat bulunamadı / Bus line not found")
+        print("Bus line not found")
         exit()
     return root
 
@@ -43,35 +47,35 @@ def parse_soap_response(inputs, root):
     if inputs["Choice"] == "1":
         if inputs["Direction"] == "":
             for table in root:
-                outp_buffer.append(table)
+                outp_buffer.append(utils.functions.parse_and_translate_values_etree(translate_dict, table))
         else:
             for table in root:
                 if inputs["Direction"] in table[2].text:
-                    outp_buffer.append(table)
+                    outp_buffer.append(utils.functions.parse_and_translate_values_etree(translate_dict, table))
 
     elif inputs["Choice"] == "2":
         if inputs["Direction"] == "":
             for table in root:
                 if inputs["Stop"] in table[5].text:
-                    outp_buffer.append(table)
+                    outp_buffer.append(utils.functions.parse_and_translate_values_etree(translate_dict, table))
         else:
             for table in root:
                 if inputs["Direction"] in table[2].text and inputs["Stop"] in table[5].text:
-                    outp_buffer.append(table)
+                    outp_buffer.append(utils.functions.parse_and_translate_values_etree(translate_dict, table))
     else:
-        raise ValueError("Hatalı tercih / Invalid choice")
+        raise ValueError("Invalid choice")
     
     if len(outp_buffer) == 0: # I prefer not raising exceptions for this case, this can be a totally valid case.
-        print("Durak bulunamadı / No stop found")
+        print("No stop found")
         exit(1)
 
     return outp_buffer
 
-def print_xml_tree_tables(input_tree):
+def print_result(buffer):
     print() # for better styling
-    for table in input_tree:
-        for element in table.iterchildren():
-            print(element.tag, ":", element.text) # display the elements in current table
+    for element in buffer:
+        for key, value in element.items():
+            print(f"{key}: {value}") # display the elements in current table
         print()
 
 def main():
@@ -84,7 +88,7 @@ def main():
 
         outp_buffer = parse_soap_response(inputs, root)
         
-        print_xml_tree_tables(outp_buffer)
+        print_result(outp_buffer)
 
     except ValueError as val_exc:
         print("Value error exception occurred:", val_exc)

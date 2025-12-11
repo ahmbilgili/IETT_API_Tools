@@ -5,18 +5,20 @@ import json
 import sys
 import utils.functions
 
+translate_dict = {"SHATKODU": "Line code", "HATADI": "Line name", "SGUZERAH": "Route", "SYON": "Direction", 
+                  "SGUNTIPI": "Day type", "GUZERGAH_ISARETI": "Route sign", "SSERVISTIPI": "Service type", "DT": "Time information"}
 wsdl = "xml/PlanlananSeferSaati.asmx.xml"
 
 def validate_and_format_line_code_day(line_code, day):
     line_code = utils.functions.special_char_upper_func(line_code)
 
     if line_code == "": # I am expecting a hat_kodu, so its reasonable to place exception here.
-        raise ValueError("Hat kodu boş bırakılamaz / Bus code cannot be left empty")
+        raise ValueError("Bus code cannot be left empty")
     
     day = day.upper()
 
     if day not in {"I", "C", "P"}:
-        raise ValueError("Hatalı gün seçimi / Incorrect day choice")
+        raise ValueError("Incorrect day choice")
 
     output_dict = {"Line_Code": line_code, "Day": day}
     return output_dict
@@ -26,7 +28,7 @@ def soap_call(input_line_code):
     line_hours_response = client.service.GetPlanlananSeferSaati_json(input_line_code)
 
     if len(line_hours_response) == 2:
-        print("Sefer saatleri bulunamadı, hat kodu yanlış girilmiş olabilir / Timetable not found, it's possible that bus line is incorrect")
+        print("Timetable not found, it's possible that bus line is incorrect")
         exit()
 
     return line_hours_response
@@ -51,7 +53,7 @@ def print_bus_line_names(bus_lines):
 
 def validate_direction(direction):    
     if direction != "G" and direction != "D":
-        raise ValueError("Hatalı yön seçimi / Incorrect direction choice")
+        raise ValueError("Incorrect direction choice")
     return direction
 
 def get_specific_timetables(soap_response_list, user_inputs):
@@ -59,10 +61,10 @@ def get_specific_timetables(soap_response_list, user_inputs):
 
     for element in soap_response_list:
         if element["SYON"] == user_inputs["Direction"] and element["SGUNTIPI"] == user_inputs["Day"]:
-            outp_buffer.append(element)
+            outp_buffer.append(utils.functions.parse_and_translate_values_dict(translate_dict, element))
 
     if len(outp_buffer) == 0:
-        print("Belirtilen özelliklere sahip hattın sefer saatleri bulunamadı / Unable to find timetable of queried bus line with given specifics")
+        print("Unable to find timetable of queried bus line with given specifics")
         exit()
         
     return outp_buffer
@@ -70,18 +72,13 @@ def get_specific_timetables(soap_response_list, user_inputs):
 def print_dictionary(specific_timetables_list):
     print()
     for element in specific_timetables_list:
-            print("Hat Kodu: ", element["SHATKODU"])
-            print("Hat Adı: ", element["HATADI"])
-            print("Güzergah Kodu: ", element["SGUZERAH"])
-            print("Yön Bilgisi: ", element["SYON"])
-            print("Gün Bilgisi: ", element["SGUNTIPI"])
-            print("Güzergah İşareti: ", element["GUZERGAH_ISARETI"])
-            print("Servis Tipi: ", element["SSERVISTIPI"])
-            print("Saat Bilgisi: ", element["DT"], "\n")
+        for key, value in element.items():
+            print(f"{key}: {value}")
+        print()
 
 def main():
     try:
-        user_inputs = validate_and_format_line_code_day(input("Hat kodu giriniz / Enter bus line code: "), input("Gün seçiniz (I - hafta içi, C - Cumartesi, P - Pazar) / Choose day (I - weekdays, C - Saturday, P - Sunday): "))
+        user_inputs = validate_and_format_line_code_day(input("Enter bus line code: "), input("Choose day (I - weekdays, C - Saturday, P - Sunday): "))
         soap_response = soap_call(user_inputs["Line_Code"])
 
         soap_response_list = convert_soap_response_to_list(soap_response)
@@ -90,7 +87,7 @@ def main():
 
         print_bus_line_names(unique_bus_line_names)
         
-        direction = input("Yön giriniz (G - Gidiş, D-Dönüş, soldan sağa) / Enter direction (G - from left to right, D - from right to left): ").upper()
+        direction = input("Enter direction (G - from left to right, D - from right to left): ").upper()
         
         user_inputs["Direction"] = validate_direction(direction)
         

@@ -5,7 +5,9 @@ import zeep
 from datetime import date
 from lxml import etree
 import zeep.exceptions
-sys.path.append("/home/lolundcmd/Desktop/IETT_API_Tools")
+
+root_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) 
+sys.path.append(root_path)
 
 import departure_count_day
 
@@ -168,7 +170,7 @@ def test_get_data_of_specific_bus_line_valid():
     input = ("KM18", response_list)
     output = departure_count_day.get_data_of_specific_bus_line(input[0], input[1])
 
-    expected_output = [{"Gun":"\\/Date(1748811600000)\\/","Hat":"KM18","Yolculuk":"150"}]
+    expected_output = [{"Day": date(2025, 6, 2), "Line":"KM18", "Number of trips":"150"}]
     
     assert output == expected_output
 
@@ -208,17 +210,17 @@ def test_get_data_of_specific_bus_line_busline_is_empty():
     output = departure_count_day.get_data_of_specific_bus_line(input[0], input[1])
 
     expected_output = [
-        {"Gun":"\\/Date(1748811600000)\\/","Hat":"34","Yolculuk":"687300"},
-        {"Gun":"\\/Date(1748811600000)\\/","Hat":"34A","Yolculuk":"126385"},
-        {"Gun":"\\/Date(1748811600000)\\/","Hat":"500T","Yolculuk":"31175"},
-        {"Gun":"\\/Date(1748811600000)\\/","Hat":"null","Yolculuk":"30093"},
+        {"Day":date(2025, 6, 2),"Line":"34","Number of trips":"687300"},
+        {"Day":date(2025, 6, 2),"Line":"34A","Number of trips":"126385"},
+        {"Day":date(2025, 6, 2),"Line":"500T","Number of trips":"31175"},
+        {"Day":date(2025, 6, 2),"Line":"null","Number of trips":"30093"},
     ]
     
     assert output == expected_output
 
 def test_print_elements_single_element(capsys):
     input = [
-        {"Gun":"\\/Date(1748811600000)\\/","Hat":"34","Yolculuk":"687300"}
+        {"Gün":date(2025, 6, 2),"Hat":"34","Yolculuk":"687300"}
     ]
 
     departure_count_day.print_elements(input)
@@ -234,10 +236,10 @@ def test_print_elements_single_element(capsys):
 
 def test_print_elements_multiple_element(capsys):
     input = [
-        {"Gun":"\\/Date(1748811600000)\\/","Hat":"34","Yolculuk":"687300"},
-        {"Gun":"\\/Date(1748811600000)\\/","Hat":"34A","Yolculuk":"126385"},
-        {"Gun":"\\/Date(1748811600000)\\/","Hat":"500T","Yolculuk":"31175"},
-        {"Gun":"\\/Date(1748811600000)\\/","Hat":"null","Yolculuk":"30093"},
+        {"Gün":date(2025, 6, 2),"Hat":"34","Yolculuk":"687300"},
+        {"Gün":date(2025, 6, 2),"Hat":"34A","Yolculuk":"126385"},
+        {"Gün":date(2025, 6, 2),"Hat":"500T","Yolculuk":"31175"},
+        {"Gün":date(2025, 6, 2),"Hat":"null","Yolculuk":"30093"},
     ]
 
     departure_count_day.print_elements(input)

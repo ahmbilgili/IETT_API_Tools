@@ -5,6 +5,7 @@ import json
 import lxml.etree
 import utils.functions
 
+translate_dict = {"HAT_KODU": "Line code", "HAT_ADI": "Line name", "TAM_HAT_ADI": "Complete line name", "HAT_DURUMU": "Line status", "BOLGE": "Region", "SEFER_SURESI": "One-way trip time"}
 wsdl = "xml/durak_hat_bilgi.xml"
 
 def take_line_code(line_code_input):
@@ -16,22 +17,30 @@ def soap_call(line_code):
     line_service_response = client.service.HatServisi_GYY(line_code) # returns lxml.etree._Element
 
     if len(line_service_response) == 0:
-        print("Hat bulunamadı / Bus line not found")
+        print("Bus line not found")
         exit()
     return line_service_response
 
-def print_etree(input_lxml_etree):
+def parse_etree(input_lxml_etree):
+    outp_buffer = []
     for table in input_lxml_etree:
+        # will not use parse_and_translate_values here, internal logic is different (etree)
+        outp_buffer.append(utils.functions.parse_and_translate_values_etree(translate_dict, table))
+    return outp_buffer
+
+def print_response(buffer):
+    print()
+    for element in buffer:
+        for key, value in element.items():
+            print(f"{key}: {value}")
         print()
-        for element in table:
-            print(element.tag, ":", element.text)
 
 def main():
     try:
-        line_code = take_line_code(input("Hat kodu giriniz (tüm hatlar için boş bırakın) / Enter bus line code (leave empty for all lines): "))
+        line_code = take_line_code(input("Enter bus line code (leave empty for all lines): "))
         line_service_response = soap_call(line_code)
-        
-        print_etree(line_service_response)
+        parsed_response = parse_etree(line_service_response)
+        print_response(parsed_response)
     except ValueError as val_error_exc:
         print(val_error_exc)
 

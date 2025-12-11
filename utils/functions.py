@@ -18,3 +18,31 @@ def ms_parser(line):
             endidx = i
     date_to_ms = int(line[startidx+1:endidx])
     return date_to_ms
+
+# Converts the dictionary elements in given list to a string format.
+def convert_list_tostr(announcment_list):
+    out_string = ""
+    for element in announcment_list:
+        for key, value in element.items():
+            out_string += f"{key}: {value}\n"
+        out_string += "\n"
+    return out_string
+
+# For translating key(s) in dictionary and adding (translated_key, value) pair to a new dictionary
+def parse_and_translate_values_dict(translate_dict, buffer):
+    temp_dict = {}
+    for key, value in buffer.items():
+        try:
+            temp_dict[translate_dict[key]] = value
+        except:
+            temp_dict[key] = value
+    return temp_dict
+
+def parse_and_translate_values_etree(translate_dict, buffer):
+    temp_dict = {}
+    for element in buffer:
+        try:
+            temp_dict[translate_dict[element.tag]] = element.text
+        except:
+            temp_dict[element.tag] = element.text
+    return temp_dict

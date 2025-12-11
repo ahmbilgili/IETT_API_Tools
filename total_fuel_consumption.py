@@ -2,11 +2,14 @@
 
 import zeep
 import json
+import utils.functions
 
 wsdl = "https://api.ibb.gov.tr/iett/AracAnaVeri/AracOzellik.asmx?wsdl"
 
+translate_dict = {"ToplamAkarYakit": "Total fuel consumption (Liters)", "Gun": "Day", "Ay": "Month", "Yil": "Year"}
+
 def take_inputs():
-    date_val = input("Yil ve ay sayilarini giriniz (arada bosluk birakarak) / Enter year and month number (leaving space in between): ").split(' ')
+    date_val = input("Enter year and month number (leaving space in between): ").split(' ')
 
     if len(date_val) != 2 or date_val[0].isnumeric() == False or date_val[1].isnumeric() == False:
         raise ValueError("Incorrect format")
@@ -22,20 +25,22 @@ def soap_call(input_dict):
     client = zeep.Client(wsdl=wsdl)
     akaryakit_litre = client.service.GetAkarYakitToplamLitre_json(input_dict["Year"], input_dict["Month"])
     if len(akaryakit_litre) == 2: # I don't know why it returns 2 characters
-        print("No data found / Veri bulunamadı")
+        print("No data found")
         exit()
     return akaryakit_litre
 
-def convert_soap_response_to_dictionary(input_string):
+def deserialize_soap_response(input_string):
     input_string = json.loads(input_string)
-    return input_string
+    output_buffer = []
+    for element in input_string:
+        output_buffer.append(utils.functions.parse_and_translate_values_dict(translate_dict, element))
+    return output_buffer
 
-def print_dictionary(input_array):
-    for element in input_array:
-        print(f"Toplam Akaryakıt: {element["ToplamAkarYakit"]}L")
-        print(f"Gün: {element["Gun"]}")
-        print(f"Ay: {element["Ay"]}")
-        print(f"Yıl: {element["Yil"]}\n")
+def print_result(buffer):
+    for element in buffer:
+        for key, value in element.items():
+            print(f"{key}: {value}")
+        print()
 
 def main():
     try:
@@ -43,9 +48,9 @@ def main():
         formatted_input_dict = convert_dict_strings_to_int(input_dict)
 
         soap_response = soap_call(formatted_input_dict)
-        formatted_soap_response = convert_soap_response_to_dictionary(soap_response)
+        formatted_soap_response = deserialize_soap_response(soap_response)
         
-        print_dictionary(formatted_soap_response)
+        print_result(formatted_soap_response)
 
     except ValueError as val_exc:
         print("Value error exception:", val_exc)
