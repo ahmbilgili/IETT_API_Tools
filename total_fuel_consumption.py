@@ -2,7 +2,7 @@
 
 import zeep
 import json
-import utils.functions
+import utils.functions as helper_functions
 
 wsdl = "https://api.ibb.gov.tr/iett/AracAnaVeri/AracOzellik.asmx?wsdl"
 
@@ -33,14 +33,8 @@ def deserialize_soap_response(input_string):
     input_string = json.loads(input_string)
     output_buffer = []
     for element in input_string:
-        output_buffer.append(utils.functions.parse_and_translate_values_dict(translate_dict, element))
+        output_buffer.append(helper_functions.parse_and_translate_values_dict(translate_dict, element))
     return output_buffer
-
-def print_result(buffer):
-    for element in buffer:
-        for key, value in element.items():
-            print(f"{key}: {value}")
-        print()
 
 def main():
     try:
@@ -50,7 +44,7 @@ def main():
         soap_response = soap_call(formatted_input_dict)
         formatted_soap_response = deserialize_soap_response(soap_response)
         
-        print_result(formatted_soap_response)
+        helper_functions.print_result(formatted_soap_response)
 
     except ValueError as val_exc:
         print("Value error exception:", val_exc)

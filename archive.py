@@ -4,7 +4,7 @@ import json
 import os
 import lxml
 
-import utils.functions
+import utils.functions as helper_functions
 
 wsdl = "https://api.ibb.gov.tr/iett/ibb/ibb360.asmx?wsdl"
 
@@ -34,7 +34,7 @@ def parse_xml(body):
     for table in body:
         if isinstance(table, lxml.etree._Element) == False:
             raise TypeError(f"Invalid type {type(table)} passed to parse_xml function")
-        output_buffer.append(utils.functions.parse_and_translate_values_etree(translate_dict, table))
+        output_buffer.append(helper_functions.parse_and_translate_values_etree(translate_dict, table))
 
     return output_buffer
 
@@ -48,13 +48,6 @@ def get_specific_bus_line_data(table_list, bus_line_code):
                 bus_line_data.append(table)
     return bus_line_data
 
-def print_elements(element_list):
-    print()
-    for table in element_list:
-        for key, value in table.items():
-            print(f"{key}: {value}")
-        print()
-
 def main():
     try:
         date_input = input("Enter date: ")
@@ -65,11 +58,11 @@ def main():
 
         response_parsed = parse_xml(response)
 
-        bus_line_input = utils.functions.special_char_upper_func(input("Enter line code (leave empty for all lines): "))
+        bus_line_input = helper_functions.special_char_upper_func(input("Enter line code (leave empty for all lines): "))
 
         specific_bus_line_data = get_specific_bus_line_data(response_parsed, bus_line_input)
 
-        print_elements(specific_bus_line_data)
+        helper_functions.print_result(specific_bus_line_data)
     except ValueError as val_exc:
         print(f"ValueError exception: {val_exc}")  
     except TypeError as type_exc:

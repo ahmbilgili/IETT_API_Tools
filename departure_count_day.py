@@ -4,7 +4,7 @@
 import zeep
 import json
 from datetime import date, timedelta
-import utils.functions
+import utils.functions as helper_functions
 
 wsdl = "https://api.ibb.gov.tr/iett/ibb/ibb360.asmx?wsdl"
 
@@ -47,7 +47,7 @@ def get_data_of_specific_bus_line(bus_line_val, response_list):
                 # will not use parse_and_translate_values here, internal logic is different.
                 try:
                     if key == "Gun":
-                        date_to_ms = utils.functions.ms_parser(value)
+                        date_to_ms = helper_functions.ms_parser(value)
                         curr_date_conversion = ms_to_date_converter(date_to_ms) 
                         value = curr_date_conversion
                     temp_dict[translate_dict[key]] = value
@@ -56,20 +56,13 @@ def get_data_of_specific_bus_line(bus_line_val, response_list):
             output_buffer.append(temp_dict)
     return output_buffer
 
-def print_elements(buffer):
-    print()
-    for element in buffer:
-        for key, value in element.items():
-            print(f"{key}: {value}")
-        print()
-
 def main():
     try:
         date_val = input("Enter date (YYY-MM-DD): ")
 
         validate_inputs(date_val)
 
-        bus_line_val = utils.functions.special_char_upper_func(input("Enter bus line code (Leave empty for all lines): "))
+        bus_line_val = helper_functions.special_char_upper_func(input("Enter bus line code (Leave empty for all lines): "))
 
         soap_response = soap_call(date_val)
 
@@ -81,7 +74,7 @@ def main():
             print("Number of trips not found for the specified bus line")
             exit()
 
-        print_elements(bus_data)
+        helper_functions.print_result(bus_data)
     except ValueError as val_exc:
         print("ValueError exception:", val_exc)
 

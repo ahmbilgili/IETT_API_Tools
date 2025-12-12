@@ -161,37 +161,3 @@ def test_get_specific_bus_line_data_multiple_element_nonexistent_buslinecode():
     output = archive.get_specific_bus_line_data(input[0], input[1])
     expected_output = []
     assert output == expected_output
-
-
-def test_print_elements_empty_input(capsys):
-    input = []
-    archive.print_elements(input)
-    captured = capsys.readouterr()
-    expected_output = str("\n")
-    assert captured.out == expected_output
-
-def test_print_elements_single_element_input(capsys):
-    input = [{"Line code": "KM18", "Line name": "SABANCI ÜNİ - KURTKÖY METRO"}]
-    archive.print_elements(input)
-    captured = capsys.readouterr()
-    expected_output = str(
-        "\nLine code: KM18\n" +
-        "Line name: SABANCI ÜNİ - KURTKÖY METRO\n\n"
-    )
-    assert captured.out == expected_output
-
-def test_print_elements_multiple_element_input(capsys):
-    input = [{"Line code": "KM18", "Line name": "SABANCI ÜNİ - KURTKÖY METRO"}, 
-              {"Line code": "16D", "Line name": "ALTKAYNARCA / PENDİK - KADIKÖY"},
-              {"Line code": "133AK", "Line name": "TEPEÖREN - KARTAL"}]
-    archive.print_elements(input)
-    captured = capsys.readouterr()
-    expected_output = str(
-        "\nLine code: KM18\n" +
-        "Line name: SABANCI ÜNİ - KURTKÖY METRO\n\n" +
-        "Line code: 16D\n" +
-        "Line name: ALTKAYNARCA / PENDİK - KADIKÖY\n\n" +
-        "Line code: 133AK\n" +
-        "Line name: TEPEÖREN - KARTAL\n\n" 
-    )
-    assert captured.out == expected_output

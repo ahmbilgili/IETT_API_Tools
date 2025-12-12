@@ -3,13 +3,13 @@
 import zeep
 import json
 import lxml.etree
-import utils.functions
+import utils.functions as helper_functions
 
 translate_dict = {"HAT_KODU": "Line code", "HAT_ADI": "Line name", "TAM_HAT_ADI": "Complete line name", "HAT_DURUMU": "Line status", "BOLGE": "Region", "SEFER_SURESI": "One-way trip time"}
 wsdl = "xml/durak_hat_bilgi.xml"
 
 def take_line_code(line_code_input):
-    line_code = utils.functions.special_char_upper_func(line_code_input)
+    line_code = helper_functions.special_char_upper_func(line_code_input)
     return line_code
 
 def soap_call(line_code):
@@ -24,23 +24,15 @@ def soap_call(line_code):
 def parse_etree(input_lxml_etree):
     outp_buffer = []
     for table in input_lxml_etree:
-        # will not use parse_and_translate_values here, internal logic is different (etree)
-        outp_buffer.append(utils.functions.parse_and_translate_values_etree(translate_dict, table))
+        outp_buffer.append(helper_functions.parse_and_translate_values_etree(translate_dict, table))
     return outp_buffer
-
-def print_response(buffer):
-    print()
-    for element in buffer:
-        for key, value in element.items():
-            print(f"{key}: {value}")
-        print()
 
 def main():
     try:
         line_code = take_line_code(input("Enter bus line code (leave empty for all lines): "))
         line_service_response = soap_call(line_code)
         parsed_response = parse_etree(line_service_response)
-        print_response(parsed_response)
+        helper_functions.print_result(parsed_response)
     except ValueError as val_error_exc:
         print(val_error_exc)
 

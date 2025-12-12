@@ -46,3 +46,10 @@ def parse_and_translate_values_etree(translate_dict, buffer):
         except:
             temp_dict[element.tag] = element.text
     return temp_dict
+
+# Prints results. buffer is a list of dictionaries.
+def print_result(buffer):
+    for element in buffer:
+        for key, value in element.items():
+            print(f"{key}: {value}")
+        print()

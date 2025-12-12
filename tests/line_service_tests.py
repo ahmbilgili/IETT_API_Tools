@@ -2,7 +2,9 @@ import pytest
 import os
 import sys
 from lxml import etree
-sys.path.append("/home/lolundcmd/Desktop/IETT_API_Tools")
+
+root_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) 
+sys.path.append(root_path)
 
 import line_service
 
@@ -28,7 +30,7 @@ def etree_constructor(tables): # helper for methods below.
     for i in range(len(tables)):
         root_elem.append(etree.Element("Table"))
     curr_table_index = 0
-    for table in tables :
+    for table in tables:
         for key, value in table.items():
             element = etree.Element(key)
             element.text = value
@@ -36,30 +38,24 @@ def etree_constructor(tables): # helper for methods below.
         curr_table_index += 1
     return root_elem
 
-def test_print_etree_singletable(capsys):
+# For testing the function above.
+def test_parse_etree_singletable(capsys):
     mock_tables = [{"AB": "C", "This_is": "Fake", "Good": "Bye"}]
     mock_etree = etree_constructor(mock_tables)
-    line_service.print_etree(mock_etree)
-    captured = capsys.readouterr()
-    expected_output = str(
-        "\nAB : C\n" + "This_is : Fake\n" + "Good : Bye\n" 
-    )
-    assert captured.out == expected_output
+    result = line_service.parse_etree(mock_etree)
+    expected_result = [{"AB": "C", "This_is": "Fake", "Good": "Bye"}]
+    assert result == expected_result
 
 def test_print_etree_multipletable(capsys):
     mock_tables = [{"AB": "C", "This_is": "Fake", "Good": "Bye"}, {"This_is": "Table_Two"}]
     mock_etree = etree_constructor(mock_tables)
-    line_service.print_etree(mock_etree)
-    captured = capsys.readouterr()
-    expected_output = str(
-        "\nAB : C\n" + "This_is : Fake\n" + "Good : Bye\n" + "\nThis_is : Table_Two\n" 
-    )
-    assert captured.out == expected_output
+    result = line_service.parse_etree(mock_etree)
+    expected_result = [{"AB": "C", "This_is": "Fake", "Good": "Bye"}, {"This_is": "Table_Two"}]
+    assert result == expected_result
 
 def test_print_etree_emptytable(capsys):
     mock_tables = [{}]
     mock_etree = etree_constructor(mock_tables)
-    line_service.print_etree(mock_etree)
-    captured = capsys.readouterr()
-    expected_output = str("\n")
-    assert captured.out == expected_output
+    result = line_service.parse_etree(mock_etree)
+    expected_result = [{}]
+    assert result == expected_result

@@ -4,7 +4,9 @@ import sys
 from lxml import etree
 import zeep
 import zeep.exceptions
-sys.path.append("/home/lolundcmd/Desktop/IETT_API_Tools")
+
+root_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) 
+sys.path.append(root_path)
 
 import scheduled_departure_hours
 
@@ -164,11 +166,11 @@ def test_get_specific_timetables_single_element_list():
     ], {"Direction": "G", "Day": "I"})
     output = scheduled_departure_hours.get_specific_timetables(inputs[0], inputs[1])
 
-    expected_output = [{"SHATKODU": "KM18", "SYON": "G", "SGUNTIPI": "I"}]
+    expected_output = [{"Line code": "KM18", "Direction": "G", "Day type": "I"}]
     
     assert output == expected_output
 
-def test_get_specific_timetables_multiple_element_list():
+def test_get_specific_timetables_multiple_element_list_1():
     inputs = ([
         {"SHATKODU": "KM18", "SYON": "G", "SGUNTIPI": "P"}, 
         {"SHATKODU": "KM18", "SYON": "G", "SGUNTIPI": "C"}, 
@@ -179,7 +181,24 @@ def test_get_specific_timetables_multiple_element_list():
     ], {"Direction": "D", "Day": "C"})
     output = scheduled_departure_hours.get_specific_timetables(inputs[0], inputs[1])
 
-    expected_output = [{"SHATKODU": "KM18", "SYON": "D", "SGUNTIPI": "C"}]
+    expected_output = [{"Line code": "KM18", "Direction": "D", "Day type": "C"}]
+    
+    assert output == expected_output
+
+def test_get_specific_timetables_multiple_element_list_2():
+    inputs = ([
+        {"SHATKODU": "KM18", "SYON": "D", "SGUNTIPI": "C"}, 
+        {"SHATKODU": "UM73", "SYON": "G", "SGUNTIPI": "C"}, 
+        {"SHATKODU": "16D", "SYON": "G", "SGUNTIPI": "I"}, 
+        {"SHATKODU": "22", "SYON": "D", "SGUNTIPI": "P"}, 
+        {"SHATKODU": "132", "SYON": "D", "SGUNTIPI": "C"}, 
+        {"SHATKODU": "KM27", "SYON": "D", "SGUNTIPI": "I"}, 
+    ], {"Direction": "D", "Day": "C"})
+    output = scheduled_departure_hours.get_specific_timetables(inputs[0], inputs[1])
+
+    expected_output = [
+        {"Line code": "KM18", "Direction": "D", "Day type": "C"},
+        {"Line code": "132", "Direction": "D", "Day type": "C"}]   
     
     assert output == expected_output
 
@@ -193,73 +212,3 @@ def test_get_specific_timetables_multiple_element_list_no_timetable_day():
         ], {"Direction": "G", "Day": "P"})
         
         output = scheduled_departure_hours.get_specific_timetables(inputs[0], inputs[1])
-
-def test_print_dictionary_single(capsys):
-    input = [
-        {"SHATKODU":"KM18","HATADI":"SABANCI ÜNİ./MEDENİYET ÜNİ. - PENDİK METRO/KARTAL","SGUZERAH":"KM18_G_D0","SYON":"G","SGUNTIPI":"I","GUZERGAH_ISARETI":"None","SSERVISTIPI":"Normal","DT":"09:00"},
-    ]
-    scheduled_departure_hours.print_dictionary(input)
-    captured = capsys.readouterr()
-
-    expected_output = str(
-        "Hat Kodu:  KM18\n" +
-        "Hat Adı:  SABANCI ÜNİ./MEDENİYET ÜNİ. - PENDİK METRO/KARTAL\n" +
-        "Güzergah Kodu:  KM18_G_D0\n" +
-        "Yön Bilgisi:  G\n" +
-        "Gün Bilgisi:  I\n" + 
-        "Güzergah İşareti:  None\n" +
-        "Servis Tipi:  Normal\n" +
-        "Saat Bilgisi:  09:00 \n\n"  
-    )
-
-    assert captured.out == expected_output
-
-def test_print_dictionary_multiple(capsys):
-    input = [
-        {"SHATKODU":"KM18","HATADI":"SABANCI ÜNİ./MEDENİYET ÜNİ. - PENDİK METRO/KARTAL","SGUZERAH":"KM18_G_D0","SYON":"G","SGUNTIPI":"I","GUZERGAH_ISARETI":"None","SSERVISTIPI":"Normal","DT":"09:00"},
-        {"SHATKODU":"KM18","HATADI":"PENDİK/PENDİK YHT-SABİHA GÖKÇEN HAVALİMANI","SGUZERAH":"KM18_G_D4155","SYON":"G","SGUNTIPI":"I","GUZERGAH_ISARETI":"None","SSERVISTIPI":"Ara Dinlen","DT":"09:30"},
-        {"SHATKODU":"KM18","HATADI":"SABANCI ÜNİ./MEDENİYET ÜNİ. - PENDİK METRO/KARTAL","SGUZERAH":"KM18_G_D0","SYON":"G","SGUNTIPI":"I","GUZERGAH_ISARETI":"None","SSERVISTIPI":"Normal","DT":"10:30"},
-    ]
-    scheduled_departure_hours.print_dictionary(input)
-    captured = capsys.readouterr()
-
-    expected_output = str(
-        "Hat Kodu:  KM18\n" +
-        "Hat Adı:  SABANCI ÜNİ./MEDENİYET ÜNİ. - PENDİK METRO/KARTAL\n" +
-        "Güzergah Kodu:  KM18_G_D0\n" +
-        "Yön Bilgisi:  G\n" +
-        "Gün Bilgisi:  I\n" + 
-        "Güzergah İşareti:  None\n" +
-        "Servis Tipi:  Normal\n" +
-        "Saat Bilgisi:  09:00 \n\n" +
-
-        "Hat Kodu:  KM18\n" +
-        "Hat Adı:  PENDİK/PENDİK YHT-SABİHA GÖKÇEN HAVALİMANI\n" +
-        "Güzergah Kodu:  KM18_G_D4155\n" + 
-        "Yön Bilgisi:  G\n" +
-        "Gün Bilgisi:  I\n" +
-        "Güzergah İşareti:  None\n" +
-        "Servis Tipi:  Ara Dinlen\n" + 
-        "Saat Bilgisi:  09:30 \n\n" +
-
-        "Hat Kodu:  KM18\n" +
-        "Hat Adı:  SABANCI ÜNİ./MEDENİYET ÜNİ. - PENDİK METRO/KARTAL\n"
-        "Güzergah Kodu:  KM18_G_D0\n" +
-        "Yön Bilgisi:  G\n" +
-        "Gün Bilgisi:  I\n" +
-        "Güzergah İşareti:  None\n" +
-        "Servis Tipi:  Normal\n" +
-        "Saat Bilgisi:  10:30 \n\n"
-    )
-
-    assert captured.out == expected_output
-
-
-def test_print_dictionary_empty(capsys):
-    input = []
-    scheduled_departure_hours.print_dictionary(input)
-    captured = capsys.readouterr()
-
-    expected_output = str()
-
-    assert captured.out == expected_output

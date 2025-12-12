@@ -3,14 +3,15 @@
 from zeep import Client, Settings
 import json
 import sys
-import utils.functions
+import utils.functions as helper_functions
 
 translate_dict = {"SHATKODU": "Line code", "HATADI": "Line name", "SGUZERAH": "Route", "SYON": "Direction", 
                   "SGUNTIPI": "Day type", "GUZERGAH_ISARETI": "Route sign", "SSERVISTIPI": "Service type", "DT": "Time information"}
+
 wsdl = "xml/PlanlananSeferSaati.asmx.xml"
 
 def validate_and_format_line_code_day(line_code, day):
-    line_code = utils.functions.special_char_upper_func(line_code)
+    line_code = helper_functions.special_char_upper_func(line_code)
 
     if line_code == "": # I am expecting a hat_kodu, so its reasonable to place exception here.
         raise ValueError("Bus code cannot be left empty")
@@ -47,7 +48,6 @@ def obtain_unique_bus_line_names(soap_response_list):
     return bus_lines
 
 def print_bus_line_names(bus_lines):
-    print()
     for element in bus_lines:
         print(element)
 
@@ -61,20 +61,13 @@ def get_specific_timetables(soap_response_list, user_inputs):
 
     for element in soap_response_list:
         if element["SYON"] == user_inputs["Direction"] and element["SGUNTIPI"] == user_inputs["Day"]:
-            outp_buffer.append(utils.functions.parse_and_translate_values_dict(translate_dict, element))
+            outp_buffer.append(helper_functions.parse_and_translate_values_dict(translate_dict, element))
 
     if len(outp_buffer) == 0:
         print("Unable to find timetable of queried bus line with given specifics")
         exit()
         
     return outp_buffer
-
-def print_dictionary(specific_timetables_list):
-    print()
-    for element in specific_timetables_list:
-        for key, value in element.items():
-            print(f"{key}: {value}")
-        print()
 
 def main():
     try:
@@ -93,7 +86,7 @@ def main():
         
         timetables = get_specific_timetables(soap_response_list, user_inputs)
 
-        print_dictionary(timetables)
+        helper_functions.print_result(timetables)
     except ValueError as val_exc:
         print("ValueError exception: ", val_exc)
 

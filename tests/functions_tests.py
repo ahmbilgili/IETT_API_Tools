@@ -79,8 +79,6 @@ def test_parse_and_translate_values_dict_multiple_elem_nomatching_translate():
     expected_output = {"G": "bc", "H": "ef"}
     assert output == expected_output
 
-
-
 def test_parse_and_translate_values_etree_no_elem():
     output = utils.functions.parse_and_translate_values_dict({"A": "BC", "d": "eF"}, {})
     expected_output = {}
@@ -110,3 +108,52 @@ def test_parse_and_translate_values_etree_multiple_elem_nomatching_translate():
     output = utils.functions.parse_and_translate_values_dict({"A": "BC", "d": "eF"}, {"G": "bc", "H": "ef"})
     expected_output = {"G": "bc", "H": "ef"}
     assert output == expected_output
+
+
+def test_print_elements_single_element_input(capsys):
+    input = [
+        {"Line Code": "93M", "Line": "ZEYTINBURNU - MECIDIYEKÖY", "Type": "Günlük", "Update Time": "Kayit Saati: 12:01", "Message": "mock"}
+    ]
+    utils.functions.print_result(input)
+    captured = capsys.readouterr()
+    assert captured.out == str(
+        "Line Code: 93M\n" +
+        "Line: ZEYTINBURNU - MECIDIYEKÖY\n" +
+        "Type: Günlük\n" + 
+        "Update Time: Kayit Saati: 12:01\n" +
+        "Message: mock\n\n"
+    )
+
+def test_print_elements_multiple_element_input(capsys):
+    input = [
+        {"Line Code": "93M", "Line": "ZEYTINBURNU - MECIDIYEKÖY", "Type": "Günlük", "Update Time": "Kayit Saati: 12:01", "Message": "mock"},
+        {'Line Code': '93T', 'Line': 'ZEYTINBURNU - TAKSIM', 'Type': 'Günlük', 'Update Time': 'Kayit Saati: 12:01', 'Message': ''},
+        {'Line Code': '97GE', 'Line': '15 TEMMUZ MAHALLESI - EMINÖNÜ', 'Type': 'Sefer', 'Update Time': 'Kayit Saati: 04:27', 'Message': 'nock'},
+    ]
+    utils.functions.print_result(input)
+    captured = capsys.readouterr()
+    assert captured.out == str(
+        "Line Code: 93M\n" +
+        "Line: ZEYTINBURNU - MECIDIYEKÖY\n" +
+        "Type: Günlük\n" + 
+        "Update Time: Kayit Saati: 12:01\n" +
+        "Message: mock\n\n" +
+
+        "Line Code: 93T\n" +
+        "Line: ZEYTINBURNU - TAKSIM\n" +
+        "Type: Günlük\n" + 
+        "Update Time: Kayit Saati: 12:01\n" +
+        "Message: \n\n" +
+
+        "Line Code: 97GE\n" +
+        "Line: 15 TEMMUZ MAHALLESI - EMINÖNÜ\n" +
+        "Type: Sefer\n" + 
+        "Update Time: Kayit Saati: 04:27\n" +
+        "Message: nock\n\n"
+    )
+
+def test_print_elements_empty_input(capsys):
+    input = []
+    utils.functions.print_result(input)
+    captured = capsys.readouterr()
+    assert captured.out == ""

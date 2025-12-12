@@ -6,19 +6,19 @@ import zeep
 import sys
 import lxml
 
-import utils.functions
+import utils.functions as helper_functions
 
 translate_dict = {"HATKODU": "Line code", "YON": "Direction", "YON_ADI": "Direction name", "SIRANO": "Queue number", 
                   "DURAKKODU": "Stop code", "DURAKADI": "Stop name", "XKOORDINATI": "X Coordinate (latitude)", "YKOORDINATI": "Y coordinate (longitude)", 
                   "DURAKTIPI": "Stop type", "ISLETMEBOLGE": "Region", "ISLETMEALTBOLGE": "Subregion", "ILCEADI": "Neighborhood name"}
 
 def take_inputs(): # For handling I/O
-    line_code = utils.functions.special_char_upper_func(input("Enter bus code: "))
+    line_code = helper_functions.special_char_upper_func(input("Enter bus code: "))
     
     if line_code == "":
         raise ValueError("Bus code cannot be left empty")
     
-    direction_choice = utils.functions.special_char_upper_func(input("Enter direction you would like to go (leave empty for all directions): "))
+    direction_choice = helper_functions.special_char_upper_func(input("Enter direction you would like to go (leave empty for all directions): "))
 
     print("1 - List stops\n2 - Search a stop")
     choice = input("Enter choice: ")
@@ -28,7 +28,7 @@ def take_inputs(): # For handling I/O
     
     stop_name = ""
     if choice == "2":
-        stop_name = utils.functions.special_char_upper_func(input("Enter stop name: "))
+        stop_name = helper_functions.special_char_upper_func(input("Enter stop name: "))
 
     IO_Dict = {"Line Code": line_code, "Direction": direction_choice, "Choice": choice, "Stop": stop_name}
     return IO_Dict
@@ -47,21 +47,21 @@ def parse_soap_response(inputs, root):
     if inputs["Choice"] == "1":
         if inputs["Direction"] == "":
             for table in root:
-                outp_buffer.append(utils.functions.parse_and_translate_values_etree(translate_dict, table))
+                outp_buffer.append(helper_functions.parse_and_translate_values_etree(translate_dict, table))
         else:
             for table in root:
                 if inputs["Direction"] in table[2].text:
-                    outp_buffer.append(utils.functions.parse_and_translate_values_etree(translate_dict, table))
+                    outp_buffer.append(helper_functions.parse_and_translate_values_etree(translate_dict, table))
 
     elif inputs["Choice"] == "2":
         if inputs["Direction"] == "":
             for table in root:
                 if inputs["Stop"] in table[5].text:
-                    outp_buffer.append(utils.functions.parse_and_translate_values_etree(translate_dict, table))
+                    outp_buffer.append(helper_functions.parse_and_translate_values_etree(translate_dict, table))
         else:
             for table in root:
                 if inputs["Direction"] in table[2].text and inputs["Stop"] in table[5].text:
-                    outp_buffer.append(utils.functions.parse_and_translate_values_etree(translate_dict, table))
+                    outp_buffer.append(helper_functions.parse_and_translate_values_etree(translate_dict, table))
     else:
         raise ValueError("Invalid choice")
     
@@ -70,13 +70,6 @@ def parse_soap_response(inputs, root):
         exit(1)
 
     return outp_buffer
-
-def print_result(buffer):
-    print() # for better styling
-    for element in buffer:
-        for key, value in element.items():
-            print(f"{key}: {value}") # display the elements in current table
-        print()
 
 def main():
     try:
@@ -88,7 +81,7 @@ def main():
 
         outp_buffer = parse_soap_response(inputs, root)
         
-        print_result(outp_buffer)
+        helper_functions.print_result(outp_buffer)
 
     except ValueError as val_exc:
         print("Value error exception occurred:", val_exc)

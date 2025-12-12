@@ -4,7 +4,9 @@ import os
 import sys
 import zeep
 import zeep.exceptions
-sys.path.append("/home/lolundcmd/Desktop/IETT_API_Tools")
+
+root_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) 
+sys.path.append(root_path)
 
 import total_fuel_consumption
 
@@ -95,6 +97,8 @@ def test_convert_dict_strings_to_int_empty_year():
         input_dict = {"Year": "", "Month": "2025"}
         output = total_fuel_consumption.convert_dict_strings_to_int(input_dict)
 
+'''
+TODO: MOCK THE API CALLS, DON'T MAKE REAL API CALLS ON TEST SUITE!
 def test_soap_call_before_2019():
     with pytest.raises(zeep.exceptions.Fault):
         input_dict = {"Year": 2018, "Month": 1}
@@ -106,58 +110,5 @@ def test_soap_call_incorrect_date(capsys):
         output = total_fuel_consumption.soap_call(input_dict)
     captured = capsys.readouterr()
     assert captured.out == "No data found / Veri bulunamadı\n" # Yes it exited, but with what message? It must be this message
+'''
 
-def test_convert_to_dictionary_valid():
-    input = '[{"ToplamAkarYakit":2043555.95,"Gun":2,"Ay":5,"Yil":2025}, {"ToplamAkarYakit":288769.82,"Gun":3,"Ay":5,"Yil":2025}]'
-    output = total_fuel_consumption.convert_soap_response_to_dictionary(input)
-    expected_output = [{"ToplamAkarYakit":2043555.95,"Gun":2,"Ay":5,"Yil":2025}, {"ToplamAkarYakit":288769.82,"Gun":3,"Ay":5,"Yil":2025}]
-    assert output == expected_output
-
-def test_convert_to_dictionary_empty():
-    input = '[]'
-    output = total_fuel_consumption.convert_soap_response_to_dictionary(input)
-    expected_output = []
-    assert output == expected_output
-
-def test_print_dictionary_single_line(capsys):
-    input = [
-        {"ToplamAkarYakit": 10, "Gun": 10, "Ay": 10, "Yil": 2023}
-    ]
-    total_fuel_consumption.print_dictionary(input)
-    captured = capsys.readouterr()
-
-    expected_output = str(
-        "Toplam Akaryakıt: 10L\n" +
-        "Gün: 10\n" + 
-        "Ay: 10\n" +
-        "Yıl: 2023\n\n" 
-    )
-    assert captured.out == expected_output
-
-def test_print_dictionary_multiple_line(capsys):
-    input = [
-        {"ToplamAkarYakit": 10, "Gun": 10, "Ay": 10, "Yil": 2023},
-        {"ToplamAkarYakit": 20, "Gun": 11, "Ay": 10, "Yil": 2023}
-    ]
-    total_fuel_consumption.print_dictionary(input)
-    captured = capsys.readouterr()
-
-    expected_output = str(
-        "Toplam Akaryakıt: 10L\n" +
-        "Gün: 10\n" + 
-        "Ay: 10\n" +
-        "Yıl: 2023\n\n" +
-        "Toplam Akaryakıt: 20L\n" +
-        "Gün: 11\n" + 
-        "Ay: 10\n" +
-        "Yıl: 2023\n\n" 
-    )
-    assert captured.out == expected_output
-
-def test_print_dictionary_empty_input(capsys):
-    input = []
-    total_fuel_consumption.print_dictionary(input)
-    captured = capsys.readouterr()
-
-    expected_output = str()
-    assert captured.out == expected_output
